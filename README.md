@@ -201,7 +201,7 @@ curl -i -X POST localhost:8083/connectors/ \
 
 ```json
 {
-  "name": ...
+  "name": "outbox-connector",
   "config": {
     ...
     "transforms": "reroute,...",
@@ -216,7 +216,7 @@ curl -i -X POST localhost:8083/connectors/ \
 
 ```json
 {
-  "name": ...
+  "name": "outbox-connector",
   "config": {
     ...
     "transforms": "extractAfter,...",
