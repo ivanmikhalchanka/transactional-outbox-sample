@@ -102,7 +102,7 @@ CREATE TABLE app_user_status_change_outbox
 
 2. #### Update status and insert record to the outbox table:
 
-```postgresql
+```sql
 -- @formatter:off
 PERFORM *
 FROM app_user
