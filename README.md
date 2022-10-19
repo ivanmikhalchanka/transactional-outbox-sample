@@ -89,7 +89,7 @@ This approach has next issues:
 
 1. #### Create outbox table for status changed event:
 
-```postgresql
+```sql
 CREATE TABLE app_user_status_change_outbox
 (
     id                BIGSERIAL PRIMARY KEY,
