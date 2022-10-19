@@ -70,13 +70,14 @@ Let's focus on user management service and find out how to implement user status
 ### Implementation 1: publish message after DB updated in scope of transaction:
 
 ```java
+// @formatter:off
 @Transactional(rollbackFor = Throwable.class)
-public User updateStatus(long id,UserStatus status,String modifiedBy)throws TaskNotFoundException{
-    User user=userDao.updateStatus(id,status);
-    kafkaTemplate.send("user.statusChanged",id,new UserStatusChangedEvent(id,status,modifiedBy));
+public User updateStatus(long id, UserStatus status, String modifiedBy) throws TaskNotFoundException {
+    User user = userDao.updateStatus(id, status);
+    kafkaTemplate.send("user.statusChanged", id, new UserStatusChangedEvent(id, status, modifiedBy));
 
     return user;
-    }
+}
 ```
 
 This approach has next issues:
@@ -159,12 +160,9 @@ debezium-connect:
     - STATUS_STORAGE_TOPIC=my_connect_statuses
 ```
 
-- create connector config connector:
+- create connector config connector (`connector-config.json`):
 
 ```json
-connector-config.json
----------------------
-
 {
   "name": "outbox-connector",
   "config": {
@@ -199,12 +197,9 @@ curl -i -X POST localhost:8083/connectors/ \
   e.g. [Setting up Postgres permissions](https://debezium.io/documentation/reference/1.9/connectors/postgresql.html#postgresql-permissions)
 
 - Configure topic rerouting
-  via [SMT](https://docs.confluent.io/platform/current/connect/transforms/overview.html), e.g.:
+  via [SMT](https://docs.confluent.io/platform/current/connect/transforms/overview.html), e.g. `connector-config.json`:
 
 ```json
-connector-config.json
----------------------
-
 {
   "name": ...
   "config": {
@@ -217,12 +212,9 @@ connector-config.json
 }
 ```
 
-- configure events transformations:
+- configure events transformations (`connector-config.json`):
 
 ```json
-connector-config.json
----------------------
-
 {
   "name": ...
   "config": {
