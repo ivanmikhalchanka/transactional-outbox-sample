@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+  xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
+
+  <changeSet id="001_app_user" author="Ivan_Mikhalchanka" runOnChange="true">
+    <sqlFile encoding="UTF-8" path="001_app_user.sql" relativeToChangelogFile="true"/>
+  </changeSet>
+  <changeSet id="002_app_user_status_change_outbox" author="Ivan_Mikhalchanka" runOnChange="true">
+    <sqlFile encoding="UTF-8" path="002_app_user_status_change_outbox.sql" relativeToChangelogFile="true"/>
+  </changeSet>
+</databaseChangeLog>

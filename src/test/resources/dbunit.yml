@@ -1,0 +1,21 @@
+cacheConnection: true
+cacheTableNames: true
+leakHunter: false
+mergeDataSets: false
+mergingStrategy: CLASS
+caseInsensitiveStrategy: LOWERCASE
+raiseExceptionOnCleanUp: true
+expectedDbType: UNKNOWN
+disableSequenceFiltering: false
+disablePKCheckFor: []
+alwaysCleanBefore: false
+alwaysCleanAfter: false
+properties:
+  batchedStatements:  false
+  qualifiedTableNames: false
+  caseSensitiveTableNames: false
+  batchSize: 100
+  fetchSize: 100
+  allowEmptyFields: false
+  schema: public
+  tableType: ["TABLE"]

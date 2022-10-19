@@ -1,0 +1,19 @@
+{
+  "connector.class": "io.debezium.connector.postgresql.PostgresConnector",
+  "database.hostname": "postgres",
+  "database.port": "5432",
+  "database.user": "sample-app-user",
+  "database.password": "password",
+  "database.dbname": "sample-db",
+  "database.server.name": "postgres",
+  "plugin.name": "pgoutput",
+  "table.whitelist": "public.app_user_status_change_outbox",
+  "publication.name": "outbox_publication",
+  "publication.autocreate.mode": "filtered",
+  "transforms": "reroute,extractAfter",
+  "transforms.reroute.type": "io.debezium.transforms.ByLogicalTableRouter",
+  "transforms.reroute.topic.regex": "(.*)user_status_change(.*)",
+  "transforms.reroute.topic.replacement": "user.statusChange",
+  "transforms.extractAfter.type": "org.apache.kafka.connect.transforms.ExtractField$Value",
+  "transforms.extractAfter.field": "after"
+}

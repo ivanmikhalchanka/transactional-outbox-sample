@@ -1,0 +1,4 @@
+<dataset>
+  <app_user id="1" email="test@sample.com" status="REGISTERED"/>
+  <app_user_status_change_outbox user_id="1" status="REGISTERED" modified_by="test-admin"/>
+</dataset>
