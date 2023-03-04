@@ -11,4 +11,7 @@
   <changeSet id="002_app_user_update_status" author="Ivan_Mikhalchanka" runOnChange="true">
     <createProcedure encoding="UTF-8" path="002_app_user_update_status.sql" relativeToChangelogFile="true"/>
   </changeSet>
+  <changeSet id="003_app_transactional_outbox_event_create" author="Ivan_Mikhalchanka" runOnChange="true">
+    <createProcedure encoding="UTF-8" path="003_app_transactional_outbox_event_create.sql" relativeToChangelogFile="true"/>
+  </changeSet>
 </databaseChangeLog>

@@ -42,20 +42,6 @@ docker logs -t transactional-outbox_debezium-connect-init_1
 kcat -C -b localhost:29092 -t user.statusChange
 ```
 
-In case of sink not initialized within 5 minutes - check init container logs:
-
-- check containers statuses:
-
-```sh
-docker ps -a
-```
-
-- find name of the container with `outbox-app-init:latest` image and check logs:
-
-```sh
-docker logs -t transactional-outbox_outbox-app-init_1
-```
-
 ### Useful links:
 
 - [SpringDoc OpenApi3 UI](http://localhost:8080/swagger-ui/index.html)
@@ -87,39 +73,56 @@ This approach has next issues:
 
 ### Implementation 2: transactional outbox table + transaction log tailing
 
-1. #### Create outbox table for status changed event:
+1. #### Create outbox table for events:
 
 ```sql
-CREATE TABLE app_user_status_change_outbox
+CREATE TABLE IF NOT EXISTS app_transactional_outbox_event
 (
     id                BIGSERIAL PRIMARY KEY,
-    user_id           TEXT        NOT NULL REFERENCES app_user (id),
-    status            TEXT        NOT NULL,
-    modified_by       TEXT        NOT NULL,
-    created_timestamp TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
+    topic             TEXT NOT NULL,
+    key               TEXT,
+    event             TEXT NOT NULL,
+    created_timestamp TIMESTAMPTZ DEFAULT NULL
 );
 ```
 
-2. #### Update status and insert record to the outbox table:
+2. #### Implement EventBus that persists events into this table instead of Kafka:
+ 
+```java
+@Repository
+public class PostgresTransactionalOutboxEventBus implements EventBus {
+  private final JdbcTemplate jdbcTemplate;
 
-```sql
+  public PostgresTransactionalOutboxEventBus(JdbcTemplate jdbcTemplate) {
+    this.jdbcTemplate = jdbcTemplate;
+  }
+
+  @Override
+  public void send(Object event) {
+    jdbcTemplate.query(
+        "SELECT * FROM app_transactional_outbox_event_create(?, ?, ?)",
+        DaoUtils.VOID_ROW_MAPPER,
+        retrieveTopic(event),
+        JsonEncoder.toJson(event),
+        retrieveEventKey(event).orElse(null));
+  }
+}
+```
+
+3. #### Update status and persist event to DB through new event bus:
+
+- Since new event bus simply persists event to the DB - it is possible to do both update and event publishing withing one DB transaction
+
+```java
 -- @formatter:off
-PERFORM *
-FROM app_user
-WHERE id = _id
-    FOR UPDATE;
+@Transactional(rollbackFor = Throwable.class)
+public User updateStatus(long userId, UserStatus status, String modifiedBy) {
+  User user = userDao.updateStatus(userId, status);
 
-IF NOT FOUND THEN
-    RAISE 'User with id  % not found', _id;
-END IF;
+  eventBus.send(new UserStatusChangeEvent(user.getId(), user.getStatus(), modifiedBy));
 
-UPDATE app_user
-SET status = _status
-WHERE id = _id;
-
-INSERT INTO app_user_status_change_outbox
-    (user_id, status, modified_by)
-VALUES (_id, _status, _modified_by);
+  return user;
+}
 ```
 
 4. #### Configure DB
@@ -160,7 +163,7 @@ debezium-connect:
     - STATUS_STORAGE_TOPIC=my_connect_statuses
 ```
 
-- create connector config connector (`connector-config.json`):
+- create connector config connector (`connector-init.json`):
 
 ```json
 {
@@ -204,24 +207,13 @@ curl -i -X POST localhost:8083/connectors/ \
   "name": "outbox-connector",
   "config": {
     ...
-    "transforms": "reroute,...",
-    "transforms.reroute.type": "io.debezium.transforms.ByLogicalTableRouter",
-    "transforms.reroute.topic.regex": "(.*)user_status_change(.*)",
-    "transforms.reroute.topic.replacement": "user.statusChange"
-  }
-}
-```
-
-- configure events transformations (`connector-config.json`):
-
-```json
-{
-  "name": "outbox-connector",
-  "config": {
-    ...
-    "transforms": "extractAfter,...",
-    "transforms.extractAfter.type": "org.apache.kafka.connect.transforms.ExtractField$Value",
-    "transforms.extractAfter.field": "after"
+    "transforms": "outbox",
+    "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+    "transforms.outbox.route.by.field": "topic",
+    "transforms.outbox.route.topic.replacement": "${routedByValue}",
+    "transforms.outbox.table.field.event.id": "id",
+    "transforms.outbox.table.field.event.key": "key",
+    "transforms.outbox.table.field.event.payload": "event"
   }
 }
 ```

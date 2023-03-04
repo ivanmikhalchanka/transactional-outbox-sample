@@ -1,5 +1,6 @@
-package com.github.ivanmikhalchanka.transactionaloutbox.dao;
+package com.github.ivanmikhalchanka.transactionaloutbox.dao.postgres;
 
+import com.github.ivanmikhalchanka.transactionaloutbox.dao.UserDao;
 import com.github.ivanmikhalchanka.transactionaloutbox.entity.User;
 import com.github.ivanmikhalchanka.transactionaloutbox.entity.UserStatus;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -20,14 +21,13 @@ public class UserDaoPostgres implements UserDao {
   }
 
   @Override
-  public User create(String email, String createdBy) {
-    return jdbcTemplate.queryForObject(
-        "SELECT * FROM app_user_create(?, ?)", mapper, email, createdBy);
+  public User create(String email) {
+    return jdbcTemplate.queryForObject("SELECT * FROM app_user_create(?)", mapper, email);
   }
 
   @Override
-  public User updateStatus(long id, UserStatus status, String modifiedBy) {
+  public User updateStatus(long id, UserStatus status) {
     return jdbcTemplate.queryForObject(
-        "SELECT * FROM app_user_update_status(?, ?, ?)", mapper, id, status.name(), modifiedBy);
+        "SELECT * FROM app_user_update_status(?, ?)", mapper, id, status.name());
   }
 }

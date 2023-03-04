@@ -7,13 +7,16 @@
   "database.dbname": "sample-db",
   "database.server.name": "postgres",
   "plugin.name": "pgoutput",
-  "table.whitelist": "public.app_user_status_change_outbox",
+  "table.whitelist": "public.app_transactional_outbox_event",
   "publication.name": "outbox_publication",
   "publication.autocreate.mode": "filtered",
-  "transforms": "reroute,extractAfter",
-  "transforms.reroute.type": "io.debezium.transforms.ByLogicalTableRouter",
-  "transforms.reroute.topic.regex": "(.*)user_status_change(.*)",
-  "transforms.reroute.topic.replacement": "user.statusChange",
-  "transforms.extractAfter.type": "org.apache.kafka.connect.transforms.ExtractField$Value",
-  "transforms.extractAfter.field": "after"
+  "transforms": "outbox",
+  "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
+  "transforms.outbox.route.by.field": "topic",
+  "transforms.outbox.route.topic.replacement": "${routedByValue}",
+  "transforms.outbox.table.field.event.id": "id",
+  "transforms.outbox.table.field.event.key": "key",
+  "transforms.outbox.table.field.event.payload": "event",
+  "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+  "value.converter.schemas.enable": "false"
 }

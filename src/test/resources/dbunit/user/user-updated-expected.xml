@@ -1,5 +1,5 @@
 <dataset>
   <app_user id="2" email="test@sample.com" status="ACTIVE"/>
-  <app_user_status_change_outbox user_id="2" status="REGISTERED" modified_by="test-admin"/>
-  <app_user_status_change_outbox user_id="2" status="ACTIVE" modified_by="test-admin-2"/>
+  <app_transactional_outbox_event topic="user.statusChange" key="2" event='{"userId":2,"status":"REGISTERED","modifiedBy":"test-admin"}'/>
+  <app_transactional_outbox_event topic="user.statusChange" key="2" event='{"userId":2,"status":"ACTIVE","modifiedBy":"test-admin-2"}'/>
 </dataset>
